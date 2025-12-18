@@ -549,7 +549,7 @@ export default function AdminDashboard() {
                   name="description"
                   value={formData.description}
                   onChange={handleInputChange}
-                  rows="3"
+                  rows={3}
                   style={{ width: '100%', padding: '0.75rem', border: '2px solid #e5e7eb', borderRadius: '8px', fontSize: '1rem' }}
                 />
               </div>
