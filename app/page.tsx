@@ -3,9 +3,8 @@
 import { useState, useEffect } from 'react'
 import type { JSX } from 'react'
 import Link from 'next/link'
-const API_URL = 'http://localhost:5000/api'
-// const API_URL = process.env.NEXT_PUBLIC_API_URL!
-
+// const API_URL = 'http://localhost:5000/api'
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
 
 interface Product {
   id: number
@@ -164,7 +163,7 @@ export default function Home() {
             {/* <Link href="/admin">
               <button className="admin-btn">⚙️ Admin Panel</button>
             </Link> */}
-            {/* <button className="admin-btn"onClick={() => window.location.href = "/admin/pesanan"}>⚙️ Admin Panel</button> */}
+            <button className="admin-btn" onClick={() => window.location.href = "/admin"}>⚙️ Admin Panel</button>
             <button className="cart-btn" onClick={() => setShowCart(true)}>
               🛒 Keranjang ({cart.length})
             </button>
