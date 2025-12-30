@@ -33,6 +33,7 @@ export default function Home() {
   const [cart, setCart] = useState<CartItem[]>([])
   const [showCart, setShowCart] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [user, setUser] = useState<any>(null)
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -43,6 +44,11 @@ export default function Home() {
 
   useEffect(() => {
     fetchProducts()
+    // Check if user is logged in
+    const userData = localStorage.getItem('user')
+    if (userData) {
+      setUser(JSON.parse(userData))
+    }
   }, [])
 
   const fetchProducts = async () => {
@@ -80,7 +86,8 @@ export default function Home() {
   }
 
   const calculateTotal = () => {
-    return cart.reduce((sum, item) => sum + item.price, 0)
+    const days = calculateDays()
+    return cart.reduce((sum, item) => sum + item.price * days, 0)
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -89,6 +96,19 @@ export default function Home() {
       [e.target.name]: e.target.value
     })
   }
+
+  const calculateDays = () => {
+    if (!formData.startDate || !formData.endDate) return 1
+
+    const start = new Date(formData.startDate)
+    const end = new Date(formData.endDate)
+
+    const diffTime = end.getTime() - start.getTime()
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+
+    return diffDays > 0 ? diffDays : 1
+  }
+
 
   const submitRental = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -99,7 +119,8 @@ export default function Home() {
     }
 
     try {
-      const response = await fetch(`${API_URL}/rental`, {
+      // Step 1: Create rental in database
+      const rentalResponse = await fetch(`${API_URL}/rental`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -110,20 +131,77 @@ export default function Home() {
         })
       })
 
-      const data = await response.json()
+      const rentalData = await rentalResponse.json()
 
-      if (data.success) {
-        alert('Pesanan berhasil! Kami akan menghubungi Anda segera.')
-        setCart([])
-        setShowCart(false)
-        setFormData({
-          name: '',
-          email: '',
-          phone: '',
-          startDate: '',
-          endDate: ''
-        })
+      if (!rentalData.success) {
+        alert('Gagal membuat pesanan')
+        return
       }
+
+      // Step 2: Create payment transaction
+      const days = calculateDays()
+
+      const paymentResponse = await fetch(`${API_URL}/payment/create-transaction`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          rentalId: rentalData.rentalId,
+          customerDetails: {
+            name: formData.name,
+            email: formData.email,
+            phone: formData.phone
+          },
+          items: cart.map(item => ({
+            id: item.id,
+            name: item.name,
+            price: item.price * days
+          })),
+          totalAmount: calculateTotal()
+        })
+      })
+
+
+
+      const paymentData = await paymentResponse.json()
+
+      if (!paymentData.success) {
+        alert('Gagal membuat transaksi pembayaran')
+        return
+      }
+
+      // Step 3: Open Midtrans Snap payment popup
+      // @ts-ignore - Midtrans Snap is loaded from external script
+      window.snap.pay(paymentData.snap_token, {
+        onSuccess: function (result: any) {
+          console.log('Payment success:', result)
+          alert('Pembayaran berhasil! Pesanan Anda sedang diproses.')
+          setCart([])
+          setShowCart(false)
+          setFormData({
+            name: '',
+            email: '',
+            phone: '',
+            startDate: '',
+            endDate: ''
+          })
+        },
+        onPending: function (result: any) {
+          console.log('Payment pending:', result)
+          alert('Pembayaran menunggu. Silakan selesaikan pembayaran Anda.')
+          setShowCart(false)
+        },
+        onError: function (result: any) {
+          console.log('Payment error:', result)
+          alert('Pembayaran gagal. Silakan coba lagi.')
+        },
+        onClose: function () {
+          console.log('Payment popup closed')
+          alert('Anda menutup popup pembayaran. Silakan selesaikan pembayaran untuk melanjutkan.')
+        }
+      })
+
     } catch (error) {
       console.error('Error submitting rental:', error)
       alert('Terjadi kesalahan. Silakan coba lagi.')
@@ -137,6 +215,12 @@ export default function Home() {
     }
   }
 
+  const handleLogout = () => {
+    localStorage.removeItem('user')
+    setUser(null)
+    alert('Logout berhasil!')
+  }
+
   if (loading) {
     return <div className="loading">Loading...</div>
   }
@@ -145,7 +229,7 @@ export default function Home() {
     <>
       <div className="header">
         <div className="container">
-          <h1>🎥 Kamberss Kamera</h1>
+          <h1>Kamberss Kamera</h1>
           <p>Sewa Peralatan Kamera Profesional</p>
         </div>
       </div>
@@ -160,14 +244,27 @@ export default function Home() {
             <span className="nav-link" onClick={() => scrollToSection('lighting')}>Lighting</span>
             <span className="nav-link" onClick={() => scrollToSection('gimbals')}>Gimbal</span>
             <span className="nav-link" onClick={() => scrollToSection('packages')}>Paket</span>
-            {/* <Link href="/admin">
-              <button className="admin-btn">⚙️ Admin Panel</button>
-            </Link> */}
-            <button className="admin-btn" onClick={() => window.location.href = "/admin"}>⚙️ Admin Panel</button>
+
+            {/* Admin Panel button - only show if user is admin */}
+            {user && user.role.toLowerCase() === 'admin' && (
+              <button className="admin-btn" onClick={() => window.location.href = "/admin"}>
+                ⚙️ Admin Panel
+              </button>
+            )}
+
             <button className="cart-btn" onClick={() => setShowCart(true)}>
               🛒 Keranjang ({cart.length})
             </button>
-            <button className="login-btn" onClick={() => window.location.href = "/login"}>Login</button>
+            {user ? (
+              <>
+                <span style={{ marginLeft: 'auto', color: '#dc2626', fontWeight: '600' }}>
+                  👤 {user.name}
+                </span>
+                <button className="login-btn" onClick={handleLogout}>Logout</button>
+              </>
+            ) : (
+              <button className="login-btn" onClick={() => window.location.href = "/login"}>Login</button>
+            )}
           </div>
         </div>
       </div>
@@ -383,7 +480,7 @@ export default function Home() {
               </div>
 
               <div className="total">
-                Total: Rp {calculateTotal().toLocaleString('id-ID')}/hari
+                Total ({calculateDays()} hari): Rp {calculateTotal().toLocaleString('id-ID')}
               </div>
 
               <form onSubmit={submitRental}>
