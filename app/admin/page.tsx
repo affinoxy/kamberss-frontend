@@ -24,9 +24,9 @@ interface Rental {
   end_date: string;
   total_price?: number;
   status: string;
-  items?: any[];
   return_date?: string;
   return_notes?: string;
+  items?: { name: string; price: number }[];
 }
 
 interface User {
@@ -53,6 +53,10 @@ export default function AdminDashboard() {
   const [showReturnModal, setShowReturnModal] = useState(false);
   const [selectedRentalForReturn, setSelectedRentalForReturn] = useState<Rental | null>(null);
   const [returnNotes, setReturnNotes] = useState('');
+
+  // Detail Modal State
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [selectedRentalForDetail, setSelectedRentalForDetail] = useState<Rental | null>(null);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -233,6 +237,16 @@ export default function AdminDashboard() {
   const handleSubmitProduct = () => {
     alert('Fitur simpan akan diimplementasikan dengan API');
     closeModal();
+  };
+
+  const openDetailModal = (rental: Rental) => {
+    setSelectedRentalForDetail(rental);
+    setShowDetailModal(true);
+  };
+
+  const closeDetailModal = () => {
+    setShowDetailModal(false);
+    setSelectedRentalForDetail(null);
   };
 
   if (loading) {
@@ -528,9 +542,7 @@ export default function AdminDashboard() {
                       </td>
                       <td style={{ padding: '1rem' }}>
                         <button
-                          onClick={() => {
-                            alert(`Detail Pesanan #${rental.id}\n\nCustomer: ${rental.name}\nTotal: Rp ${rental.total_price?.toLocaleString('id-ID') || '?'}`);
-                          }}
+                          onClick={() => openDetailModal(rental)}
                           style={{
                             background: '#3b82f6',
                             color: 'white',
@@ -956,6 +968,185 @@ export default function AdminDashboard() {
                 }}
               >
                 ✅ Konfirmasi Pengembalian
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Detail Modal */}
+      {showDetailModal && selectedRentalForDetail && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          background: 'rgba(0,0,0,0.7)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            background: 'white',
+            padding: '2rem',
+            borderRadius: '12px',
+            maxWidth: '600px',
+            width: '90%',
+            maxHeight: '80vh',
+            overflowY: 'auto'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '1px solid #e5e7eb', paddingBottom: '1rem' }}>
+              <h2 style={{ fontSize: '1.5rem', color: '#1f2937' }}>
+                Detail Pesanan #{selectedRentalForDetail.id}
+              </h2>
+              <button onClick={closeDetailModal} style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer' }}>✕</button>
+            </div>
+
+            <div style={{ marginBottom: '2rem' }}>
+              <h3 style={{ fontSize: '1.1rem', color: '#6b7280', marginBottom: '1rem' }}>Informasi Pelanggan</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div>
+                  <div style={{ fontSize: '0.875rem', color: '#9ca3af' }}>Nama</div>
+                  <div style={{ fontWeight: '600' }}>{selectedRentalForDetail.name}</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.875rem', color: '#9ca3af' }}>Email</div>
+                  <div style={{ fontWeight: '600' }}>{selectedRentalForDetail.email}</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.875rem', color: '#9ca3af' }}>Telepon</div>
+                  <div style={{ fontWeight: '600' }}>{selectedRentalForDetail.phone}</div>
+                </div>
+              </div>
+            </div>
+
+            <div style={{ marginBottom: '2rem' }}>
+              <h3 style={{ fontSize: '1.1rem', color: '#6b7280', marginBottom: '1rem' }}>Item Sewa</h3>
+              <div style={{ background: '#f9fafb', borderRadius: '8px', padding: '1rem' }}>
+                {selectedRentalForDetail.items && selectedRentalForDetail.items.length > 0 ? (
+                  <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                    {selectedRentalForDetail.items.map((item: any, idx: number) => (
+                      <li key={idx} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', borderBottom: idx !== selectedRentalForDetail.items.length - 1 ? '1px solid #e5e7eb' : 'none', paddingBottom: idx !== selectedRentalForDetail.items.length - 1 ? '0.5rem' : 0 }}>
+                        <span>{item.name}</span>
+                        <span style={{ fontWeight: '600', color: '#4b5563' }}>Rp {item.price?.toLocaleString('id-ID')}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p style={{ fontStyle: 'italic', color: '#9ca3af' }}>Tidak ada data item</p>
+                )}
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1rem', paddingTop: '1rem', borderTop: '2px solid #e5e7eb', fontWeight: '700', fontSize: '1.1rem' }}>
+                  <span>Total ({calculateDuration(selectedRentalForDetail.start_date, selectedRentalForDetail.end_date)} hari)</span>
+                  <span style={{ color: '#dc2626' }}>Rp {selectedRentalForDetail.total_price?.toLocaleString('id-ID')}</span>
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <button
+                onClick={closeDetailModal}
+                style={{
+                  background: '#e5e7eb',
+                  color: '#374151',
+                  border: 'none',
+                  padding: '0.75rem 1.5rem',
+                  borderRadius: '8px',
+                  fontWeight: '600',
+                  cursor: 'pointer'
+                }}
+              >
+                Tutup
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Detail Modal */}
+      {showDetailModal && selectedRentalForDetail && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          background: 'rgba(0,0,0,0.7)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            background: 'white',
+            padding: '2rem',
+            borderRadius: '12px',
+            maxWidth: '600px',
+            width: '90%',
+            maxHeight: '80vh',
+            overflowY: 'auto'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '1px solid #e5e7eb', paddingBottom: '1rem' }}>
+              <h2 style={{ fontSize: '1.5rem', color: '#1f2937' }}>
+                Detail Pesanan #{selectedRentalForDetail.id}
+              </h2>
+              <button onClick={closeDetailModal} style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer' }}>✕</button>
+            </div>
+
+            <div style={{ marginBottom: '2rem' }}>
+              <h3 style={{ fontSize: '1.1rem', color: '#6b7280', marginBottom: '1rem' }}>Informasi Pelanggan</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div>
+                  <div style={{ fontSize: '0.875rem', color: '#9ca3af' }}>Nama</div>
+                  <div style={{ fontWeight: '600' }}>{selectedRentalForDetail.name}</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.875rem', color: '#9ca3af' }}>Email</div>
+                  <div style={{ fontWeight: '600' }}>{selectedRentalForDetail.email}</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.875rem', color: '#9ca3af' }}>Telepon</div>
+                  <div style={{ fontWeight: '600' }}>{selectedRentalForDetail.phone}</div>
+                </div>
+              </div>
+            </div>
+
+            <div style={{ marginBottom: '2rem' }}>
+              <h3 style={{ fontSize: '1.1rem', color: '#6b7280', marginBottom: '1rem' }}>Item Sewa</h3>
+              <div style={{ background: '#f9fafb', borderRadius: '8px', padding: '1rem' }}>
+                {selectedRentalForDetail.items && selectedRentalForDetail.items.length > 0 ? (
+                  <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                    {selectedRentalForDetail.items.map((item, idx) => (
+                      <li key={idx} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', borderBottom: idx !== (selectedRentalForDetail.items?.length || 0) - 1 ? '1px solid #e5e7eb' : 'none', paddingBottom: idx !== (selectedRentalForDetail.items?.length || 0) - 1 ? '0.5rem' : 0 }}>
+                        <span>{item.name}</span>
+                        <span style={{ fontWeight: '600', color: '#4b5563' }}>Rp {item.price?.toLocaleString('id-ID')}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p style={{ fontStyle: 'italic', color: '#9ca3af' }}>Tidak ada data item</p>
+                )}
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1rem', paddingTop: '1rem', borderTop: '2px solid #e5e7eb', fontWeight: '700', fontSize: '1.1rem' }}>
+                  <span>Total ({calculateDuration(selectedRentalForDetail.start_date, selectedRentalForDetail.end_date)} hari)</span>
+                  <span style={{ color: '#dc2626' }}>Rp {selectedRentalForDetail.total_price?.toLocaleString('id-ID')}</span>
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <button
+                onClick={closeDetailModal}
+                style={{
+                  background: '#e5e7eb',
+                  color: '#374151',
+                  border: 'none',
+                  padding: '0.75rem 1.5rem',
+                  borderRadius: '8px',
+                  fontWeight: '600',
+                  cursor: 'pointer'
+                }}
+              >
+                Tutup
               </button>
             </div>
           </div>
