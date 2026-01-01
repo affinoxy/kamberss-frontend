@@ -47,7 +47,14 @@ export default function Home() {
     // Check if user is logged in
     const userData = localStorage.getItem('user')
     if (userData) {
-      setUser(JSON.parse(userData))
+      const parsedUser = JSON.parse(userData)
+      setUser(parsedUser)
+      setFormData(prev => ({
+        ...prev,
+        name: parsedUser.name || '',
+        email: parsedUser.email || '',
+        phone: parsedUser.phone || ''
+      }))
     }
   }, [])
 
@@ -77,6 +84,11 @@ export default function Home() {
 
 
   const addToCart = (product: Product, category: string) => {
+    if (!user) {
+      alert('Silakan login terlebih dahulu untuk menyewa produk!')
+      window.location.href = '/login'
+      return
+    }
     setCart([...cart, { ...product, category }])
     alert('Item berhasil ditambahkan ke keranjang!')
   }
