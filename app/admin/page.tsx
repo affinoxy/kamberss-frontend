@@ -1169,7 +1169,7 @@ export default function AdminDashboard() {
                       const d = new Date(r.created_at || r.start_date);
                       return d.getMonth() + 1 === reportMonth && d.getFullYear() === reportYear && (r.status === 'selesai' || r.status === 'disetujui' || r.status === 'dikembalikan');
                     })
-                    .reduce((sum, r) => sum + (r.total_price || 0), 0)
+                    .reduce((sum, r) => sum + Number(r.total_price || 0), 0)
                     .toLocaleString('id-ID')}
                 </div>
               </div>
