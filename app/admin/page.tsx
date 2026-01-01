@@ -1027,7 +1027,7 @@ export default function AdminDashboard() {
                 {selectedRentalForDetail.items && selectedRentalForDetail.items.length > 0 ? (
                   <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
                     {selectedRentalForDetail.items.map((item: any, idx: number) => (
-                      <li key={idx} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', borderBottom: idx !== selectedRentalForDetail.items.length - 1 ? '1px solid #e5e7eb' : 'none', paddingBottom: idx !== selectedRentalForDetail.items.length - 1 ? '0.5rem' : 0 }}>
+                      <li key={idx} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', borderBottom: idx !== (selectedRentalForDetail.items?.length || 0) - 1 ? '1px solid #e5e7eb' : 'none', paddingBottom: idx !== (selectedRentalForDetail.items?.length || 0) - 1 ? '0.5rem' : 0 }}>
                         <span>{item.name}</span>
                         <span style={{ fontWeight: '600', color: '#4b5563' }}>Rp {item.price?.toLocaleString('id-ID')}</span>
                       </li>
