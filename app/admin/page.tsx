@@ -27,6 +27,7 @@ interface Rental {
   return_date?: string;
   return_notes?: string;
   items?: { name: string; price: number }[];
+  created_at?: string;
 }
 
 interface User {
@@ -57,6 +58,10 @@ export default function AdminDashboard() {
   // Detail Modal State
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [selectedRentalForDetail, setSelectedRentalForDetail] = useState<Rental | null>(null);
+
+  // Report State
+  const [reportMonth, setReportMonth] = useState(new Date().getMonth() + 1);
+  const [reportYear, setReportYear] = useState(new Date().getFullYear());
 
   const [formData, setFormData] = useState({
     name: '',
@@ -344,6 +349,22 @@ export default function AdminDashboard() {
               }}
             >
               🔄 Pengembalian
+            </button>
+            <button
+              onClick={() => setActiveTab('reports')}
+              style={{
+                background: activeTab === 'reports' ? '#dc2626' : 'transparent',
+                color: activeTab === 'reports' ? 'white' : '#dc2626',
+                border: '2px solid #dc2626',
+                padding: '0.75rem 2rem',
+                borderRadius: '8px',
+                fontSize: '1rem',
+                fontWeight: '600',
+                cursor: 'pointer',
+                transition: 'all 0.3s'
+              }}
+            >
+              📊 Laporan
             </button>
             <button
               onClick={() => window.location.href = "/admin/users"}
@@ -1059,6 +1080,143 @@ export default function AdminDashboard() {
                 Tutup
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'reports' && (
+        <div>
+          <style jsx global>{`
+              @media print {
+                body * {
+                  visibility: hidden;
+                }
+                #printable-area, #printable-area * {
+                  visibility: visible;
+                }
+                #printable-area {
+                  position: absolute;
+                  left: 0;
+                  top: 0;
+                  width: 100%;
+                }
+                .no-print {
+                  display: none !important;
+                }
+              }
+            `}</style>
+
+          <div id="printable-area" style={{ background: 'white', padding: '2rem', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+              <h2 style={{ fontSize: '1.8rem', color: '#dc2626', margin: 0 }}>
+                Laporan Keuangan Bulanan
+              </h2>
+              <div className="no-print" style={{ display: 'flex', gap: '1rem' }}>
+                <select
+                  value={reportMonth}
+                  onChange={(e) => setReportMonth(parseInt(e.target.value))}
+                  style={{ padding: '0.5rem', borderRadius: '6px', border: '1px solid #ccc' }}
+                >
+                  {Array.from({ length: 12 }, (_, i) => (
+                    <option key={i + 1} value={i + 1}>
+                      {new Date(0, i).toLocaleString('id-ID', { month: 'long' })}
+                    </option>
+                  ))}
+                </select>
+                <input
+                  type="number"
+                  value={reportYear}
+                  onChange={(e) => setReportYear(parseInt(e.target.value))}
+                  style={{ padding: '0.5rem', borderRadius: '6px', border: '1px solid #ccc', width: '80px' }}
+                />
+                <button
+                  onClick={() => window.print()}
+                  style={{
+                    background: '#1f2937',
+                    color: 'white',
+                    border: 'none',
+                    padding: '0.5rem 1rem',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontWeight: '600'
+                  }}
+                >
+                  🖨️ Cetak
+                </button>
+              </div>
+            </div>
+
+            <div style={{ marginBottom: '1rem', fontSize: '1.1rem', fontWeight: 'bold', color: '#374151' }}>
+              Periode: {new Date(0, reportMonth - 1).toLocaleString('id-ID', { month: 'long' })} {reportYear}
+            </div>
+
+            {/* Summary Cards */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '2rem' }}>
+              <div style={{ padding: '1.5rem', background: '#f3f4f6', borderRadius: '8px' }}>
+                <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>Total Transaksi</div>
+                <div style={{ fontSize: '2rem', fontWeight: '700', color: '#111827' }}>
+                  {rentals.filter(r => {
+                    const d = new Date(r.created_at || r.start_date); // Use created_at if avail, else start_date fallback
+                    return d.getMonth() + 1 === reportMonth && d.getFullYear() === reportYear && r.status !== 'dibatalkan';
+                  }).length}
+                </div>
+              </div>
+              <div style={{ padding: '1.5rem', background: '#ecfdf5', borderRadius: '8px' }}>
+                <div style={{ fontSize: '0.875rem', color: '#047857' }}>Total Pendapatan</div>
+                <div style={{ fontSize: '2rem', fontWeight: '700', color: '#059669' }}>
+                  Rp {rentals
+                    .filter(r => {
+                      const d = new Date(r.created_at || r.start_date);
+                      return d.getMonth() + 1 === reportMonth && d.getFullYear() === reportYear && (r.status === 'selesai' || r.status === 'disetujui' || r.status === 'dikembalikan');
+                    })
+                    .reduce((sum, r) => sum + (r.total_price || 0), 0)
+                    .toLocaleString('id-ID')}
+                </div>
+              </div>
+            </div>
+
+            {/* Table */}
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead style={{ background: '#f9fafb', borderBottom: '2px solid #e5e7eb' }}>
+                <tr>
+                  <th style={{ padding: '0.75rem', textAlign: 'left' }}>ID</th>
+                  <th style={{ padding: '0.75rem', textAlign: 'left' }}>Tanggal</th>
+                  <th style={{ padding: '0.75rem', textAlign: 'left' }}>Pelanggan</th>
+                  <th style={{ padding: '0.75rem', textAlign: 'left' }}>Status</th>
+                  <th style={{ padding: '0.75rem', textAlign: 'right' }}>Nominal</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rentals
+                  .filter(r => {
+                    const d = new Date(r.created_at || r.start_date);
+                    return d.getMonth() + 1 === reportMonth && d.getFullYear() === reportYear && r.status !== 'dibatalkan';
+                  })
+                  .map((rental, idx) => (
+                    <tr key={rental.id} style={{ borderBottom: '1px solid #e5e7eb' }}>
+                      <td style={{ padding: '0.75rem' }}>#{rental.id}</td>
+                      <td style={{ padding: '0.75rem' }}>
+                        {new Date(rental.created_at || rental.start_date).toLocaleDateString('id-ID')}
+                      </td>
+                      <td style={{ padding: '0.75rem' }}>{rental.name}</td>
+                      <td style={{ padding: '0.75rem' }}>{rental.status}</td>
+                      <td style={{ padding: '0.75rem', textAlign: 'right' }}>
+                        Rp {rental.total_price?.toLocaleString('id-ID')}
+                      </td>
+                    </tr>
+                  ))}
+                {rentals.filter(r => {
+                  const d = new Date(r.created_at || r.start_date);
+                  return d.getMonth() + 1 === reportMonth && d.getFullYear() === reportYear && r.status !== 'dibatalkan';
+                }).length === 0 && (
+                    <tr>
+                      <td colSpan={5} style={{ padding: '2rem', textAlign: 'center', color: '#6b7280' }}>
+                        Tidak ada data transaksi di periode ini.
+                      </td>
+                    </tr>
+                  )}
+              </tbody>
+            </table>
           </div>
         </div>
       )}
