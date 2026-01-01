@@ -139,7 +139,8 @@ export default function Home() {
         },
         body: JSON.stringify({
           ...formData,
-          items: cart
+          items: cart,
+          userRole: user?.role
         })
       })
 
