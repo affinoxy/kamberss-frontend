@@ -63,6 +63,17 @@ export default function AdminDashboard() {
   const [reportMonth, setReportMonth] = useState(new Date().getMonth() + 1);
   const [reportYear, setReportYear] = useState(new Date().getFullYear());
 
+  // User Modal State
+  const [showUserModal, setShowUserModal] = useState(false);
+  const [modalTypeUser, setModalTypeUser] = useState('');
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [userFormData, setUserFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    role: 'customer'
+  });
+
   const [formData, setFormData] = useState({
     name: '',
     price: '',
@@ -91,6 +102,7 @@ export default function AdminDashboard() {
 
     fetchProducts();
     fetchRentals();
+    fetchUsers();
   }, []);
 
   const fetchProducts = async () => {
@@ -117,6 +129,16 @@ export default function AdminDashboard() {
       const response = await fetch(`${API_URL}/rentals`);
       const data = await response.json();
       setRentals(data);
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+
+  const fetchUsers = async () => {
+    try {
+      const response = await fetch(`${API_URL}/users`);
+      const data = await response.json();
+      setUsers(data);
     } catch (error) {
       console.error('Error:', error);
     }
@@ -254,6 +276,101 @@ export default function AdminDashboard() {
     setSelectedRentalForDetail(null);
   };
 
+  // User Management Functions
+  const openUserModal = (type: string, user: User | null = null) => {
+    setModalTypeUser(type);
+    setSelectedUser(user);
+    if (user && type === 'edit') {
+      setUserFormData({
+        name: user.name,
+        email: user.email,
+        password: '',
+        role: user.role
+      });
+    } else {
+      setUserFormData({
+        name: '',
+        email: '',
+        password: '',
+        role: 'customer'
+      });
+    }
+    setShowUserModal(true);
+  };
+
+  const closeUserModal = () => {
+    setShowUserModal(false);
+    setSelectedUser(null);
+  };
+
+  const handleUserInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setUserFormData({
+      ...userFormData,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  const handleSubmitUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      if (modalTypeUser === 'add') {
+        const response = await fetch(`${API_URL}/users`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(userFormData)
+        });
+
+        const data = await response.json();
+        if (response.ok) {
+          alert('User berhasil ditambahkan!');
+          fetchUsers();
+          closeUserModal();
+        } else {
+          alert(data.error || 'Gagal menambahkan user');
+        }
+      } else {
+        const response = await fetch(`${API_URL}/users/${selectedUser?.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(userFormData)
+        });
+
+        const data = await response.json();
+        if (response.ok) {
+          alert('User berhasil diupdate!');
+          fetchUsers();
+          closeUserModal();
+        } else {
+          alert(data.error || 'Gagal mengupdate user');
+        }
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Terjadi kesalahan');
+    }
+  };
+
+  const handleDeleteUser = async (userId: number) => {
+    if (!confirm('Yakin ingin menghapus user ini?')) return;
+
+    try {
+      const response = await fetch(`${API_URL}/users/${userId}`, {
+        method: 'DELETE'
+      });
+
+      if (response.ok) {
+        alert('User berhasil dihapus!');
+        fetchUsers();
+      } else {
+        alert('Gagal menghapus user');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Terjadi kesalahan');
+    }
+  };
+
   if (loading) {
     return <div className="loading">Memuat data...</div>;
   }
@@ -367,11 +484,11 @@ export default function AdminDashboard() {
               📊 Laporan
             </button>
             <button
-              onClick={() => window.location.href = "/admin/users"}
+              onClick={() => setActiveTab('users')}
               style={{
-                background: activeTab === 'returns' ? '#dc2626' : 'transparent',
-                color: activeTab === 'returns' ? 'white' : '#dc2626',
-                border: '2px solid #059669',
+                background: activeTab === 'users' ? '#dc2626' : 'transparent',
+                color: activeTab === 'users' ? 'white' : '#dc2626',
+                border: '2px solid #dc2626',
                 padding: '0.75rem 2rem',
                 borderRadius: '8px',
                 fontSize: '1rem',
