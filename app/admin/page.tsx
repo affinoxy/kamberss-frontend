@@ -1338,95 +1338,294 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* Detail Modal */}
-      {showDetailModal && selectedRentalForDetail && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          background: 'rgba(0,0,0,0.7)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000
-        }}>
-          <div style={{
-            background: 'white',
-            padding: '2rem',
-            borderRadius: '12px',
-            maxWidth: '600px',
-            width: '90%',
-            maxHeight: '80vh',
-            overflowY: 'auto'
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '1px solid #e5e7eb', paddingBottom: '1rem' }}>
-              <h2 style={{ fontSize: '1.5rem', color: '#1f2937' }}>
-                Detail Pesanan #{selectedRentalForDetail.id}
-              </h2>
-              <button onClick={closeDetailModal} style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer' }}>✕</button>
-            </div>
+      {/* USERS TAB CONTENT */}
+      {activeTab === 'users' && (
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+            <h2 style={{ fontSize: '1.8rem', color: '#dc2626' }}>Daftar User ({users.length})</h2>
+            <button
+              onClick={() => openUserModal('add')}
+              style={{
+                background: '#dc2626',
+                color: 'white',
+                border: 'none',
+                padding: '0.75rem 1.5rem',
+                borderRadius: '8px',
+                fontSize: '1rem',
+                fontWeight: '600',
+                cursor: 'pointer'
+              }}
+            >
+              ➕ Tambah User
+            </button>
+          </div>
 
-            <div style={{ marginBottom: '2rem' }}>
-              <h3 style={{ fontSize: '1.1rem', color: '#6b7280', marginBottom: '1rem' }}>Informasi Pelanggan</h3>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                <div>
-                  <div style={{ fontSize: '0.875rem', color: '#9ca3af' }}>Nama</div>
-                  <div style={{ fontWeight: '600' }}>{selectedRentalForDetail.name}</div>
-                </div>
-                <div>
-                  <div style={{ fontSize: '0.875rem', color: '#9ca3af' }}>Email</div>
-                  <div style={{ fontWeight: '600' }}>{selectedRentalForDetail.email}</div>
-                </div>
-                <div>
-                  <div style={{ fontSize: '0.875rem', color: '#9ca3af' }}>Telepon</div>
-                  <div style={{ fontWeight: '600' }}>{selectedRentalForDetail.phone}</div>
-                </div>
-              </div>
-            </div>
-
-            <div style={{ marginBottom: '2rem' }}>
-              <h3 style={{ fontSize: '1.1rem', color: '#6b7280', marginBottom: '1rem' }}>Item Sewa</h3>
-              <div style={{ background: '#f9fafb', borderRadius: '8px', padding: '1rem' }}>
-                {selectedRentalForDetail.items && selectedRentalForDetail.items.length > 0 ? (
-                  <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                    {selectedRentalForDetail.items.map((item, idx) => (
-                      <li key={idx} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', borderBottom: idx !== (selectedRentalForDetail.items?.length || 0) - 1 ? '1px solid #e5e7eb' : 'none', paddingBottom: idx !== (selectedRentalForDetail.items?.length || 0) - 1 ? '0.5rem' : 0 }}>
-                        <span>{item.name}</span>
-                        <span style={{ fontWeight: '600', color: '#4b5563' }}>Rp {item.price?.toLocaleString('id-ID')}</span>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p style={{ fontStyle: 'italic', color: '#9ca3af' }}>Tidak ada data item</p>
-                )}
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1rem', paddingTop: '1rem', borderTop: '2px solid #e5e7eb', fontWeight: '700', fontSize: '1.1rem' }}>
-                  <span>Total ({calculateDuration(selectedRentalForDetail.start_date, selectedRentalForDetail.end_date)} hari)</span>
-                  <span style={{ color: '#dc2626' }}>Rp {selectedRentalForDetail.total_price?.toLocaleString('id-ID')}</span>
-                </div>
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-              <button
-                onClick={closeDetailModal}
-                style={{
-                  background: '#e5e7eb',
-                  color: '#374151',
-                  border: 'none',
-                  padding: '0.75rem 1.5rem',
-                  borderRadius: '8px',
-                  fontWeight: '600',
-                  cursor: 'pointer'
-                }}
-              >
-                Tutup
-              </button>
-            </div>
+          <div style={{ background: 'white', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead style={{ background: '#f9fafb', borderBottom: '2px solid #e5e7eb' }}>
+                <tr>
+                  <th style={{ padding: '1rem', textAlign: 'left', fontWeight: '600' }}>ID</th>
+                  <th style={{ padding: '1rem', textAlign: 'left', fontWeight: '600' }}>Nama</th>
+                  <th style={{ padding: '1rem', textAlign: 'left', fontWeight: '600' }}>Email</th>
+                  <th style={{ padding: '1rem', textAlign: 'left', fontWeight: '600' }}>Role</th>
+                  <th style={{ padding: '1rem', textAlign: 'left', fontWeight: '600' }}>Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                {users.map((user, index) => (
+                  <tr key={user.id} style={{ borderBottom: '1px solid #e5e7eb', background: index % 2 === 0 ? 'white' : '#f9fafb' }}>
+                    <td style={{ padding: '1rem', fontWeight: '600' }}>#{user.id}</td>
+                    <td style={{ padding: '1rem' }}>{user.name}</td>
+                    <td style={{ padding: '1rem', color: '#6b7280' }}>{user.email}</td>
+                    <td style={{ padding: '1rem' }}>
+                      <span style={{
+                        background: user.role === 'admin' ? '#fef3c7' : '#dbeafe',
+                        color: user.role === 'admin' ? '#92400e' : '#1e40af',
+                        padding: '0.25rem 0.75rem',
+                        borderRadius: '9999px',
+                        fontSize: '0.875rem',
+                        fontWeight: '600'
+                      }}>
+                        {user.role === 'admin' ? '👑 Admin' : '👤 Customer'}
+                      </span>
+                    </td>
+                    <td style={{ padding: '1rem' }}>
+                      <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <button
+                          onClick={() => openUserModal('edit', user)}
+                          style={{
+                            background: '#3b82f6',
+                            color: 'white',
+                            border: 'none',
+                            padding: '0.5rem 1rem',
+                            borderRadius: '6px',
+                            cursor: 'pointer',
+                            fontSize: '0.875rem'
+                          }}
+                        >
+                          ✏️ Edit
+                        </button>
+                        <button
+                          onClick={() => handleDeleteUser(user.id)}
+                          style={{
+                            background: '#ef4444',
+                            color: 'white',
+                            border: 'none',
+                            padding: '0.5rem 1rem',
+                            borderRadius: '6px',
+                            cursor: 'pointer',
+                            fontSize: '0.875rem'
+                          }}
+                        >
+                          🗑️ Hapus
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       )}
-    </div>
+
+      {/* User Modal */}
+      {
+        showUserModal && (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            background: 'rgba(0,0,0,0.7)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000
+          }}>
+            <div style={{
+              background: 'white',
+              padding: '2rem',
+              borderRadius: '12px',
+              maxWidth: '500px',
+              width: '90%'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                <h2 style={{ fontSize: '1.8rem', color: '#dc2626' }}>
+                  {modalTypeUser === 'add' ? 'Tambah User Baru' : 'Edit User'}
+                </h2>
+                <button onClick={closeUserModal} style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer' }}>✕</button>
+              </div>
+
+              <form onSubmit={handleSubmitUser}>
+                <div style={{ marginBottom: '1rem' }}>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>Nama Lengkap</label>
+                  <input
+                    type="text"
+                    name="name"
+                    value={userFormData.name}
+                    onChange={handleUserInputChange}
+                    required
+                    style={{ width: '100%', padding: '0.75rem', border: '2px solid #e5e7eb', borderRadius: '8px', fontSize: '1rem' }}
+                  />
+                </div>
+
+                <div style={{ marginBottom: '1rem' }}>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>Email</label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={userFormData.email}
+                    onChange={handleUserInputChange}
+                    required
+                    style={{ width: '100%', padding: '0.75rem', border: '2px solid #e5e7eb', borderRadius: '8px', fontSize: '1rem' }}
+                  />
+                </div>
+
+                <div style={{ marginBottom: '1rem' }}>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>
+                    Password {modalTypeUser === 'edit' && '(Kosongkan jika tidak ingin mengubah)'}
+                  </label>
+                  <input
+                    type="password"
+                    name="password"
+                    value={userFormData.password}
+                    onChange={handleUserInputChange}
+                    required={modalTypeUser === 'add'}
+                    minLength={6}
+                    style={{ width: '100%', padding: '0.75rem', border: '2px solid #e5e7eb', borderRadius: '8px', fontSize: '1rem' }}
+                  />
+                </div>
+
+                <div style={{ marginBottom: '1rem' }}>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>Role</label>
+                  <select
+                    name="role"
+                    value={userFormData.role}
+                    onChange={handleUserInputChange}
+                    style={{ width: '100%', padding: '0.75rem', border: '2px solid #e5e7eb', borderRadius: '8px', fontSize: '1rem' }}
+                  >
+                    <option value="customer">Customer</option>
+                    <option value="admin">Admin</option>
+                  </select>
+                </div>
+
+                <button
+                  type="submit"
+                  style={{
+                    width: '100%',
+                    background: '#dc2626',
+                    color: 'white',
+                    padding: '1rem',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '1.1rem',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    marginTop: '1rem'
+                  }}
+                >
+                  {modalTypeUser === 'add' ? '➕ Tambah User' : '💾 Simpan Perubahan'}
+                </button>
+              </form>
+            </div>
+          </div>
+        )
+      }
+
+
+      {/* Detail Modal */}
+      {
+        showDetailModal && selectedRentalForDetail && (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            background: 'rgba(0,0,0,0.7)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000
+          }}>
+            <div style={{
+              background: 'white',
+              padding: '2rem',
+              borderRadius: '12px',
+              maxWidth: '600px',
+              width: '90%',
+              maxHeight: '80vh',
+              overflowY: 'auto'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '1px solid #e5e7eb', paddingBottom: '1rem' }}>
+                <h2 style={{ fontSize: '1.5rem', color: '#1f2937' }}>
+                  Detail Pesanan #{selectedRentalForDetail.id}
+                </h2>
+                <button onClick={closeDetailModal} style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer' }}>✕</button>
+              </div>
+
+              <div style={{ marginBottom: '2rem' }}>
+                <h3 style={{ fontSize: '1.1rem', color: '#6b7280', marginBottom: '1rem' }}>Informasi Pelanggan</h3>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <div>
+                    <div style={{ fontSize: '0.875rem', color: '#9ca3af' }}>Nama</div>
+                    <div style={{ fontWeight: '600' }}>{selectedRentalForDetail.name}</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '0.875rem', color: '#9ca3af' }}>Email</div>
+                    <div style={{ fontWeight: '600' }}>{selectedRentalForDetail.email}</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '0.875rem', color: '#9ca3af' }}>Telepon</div>
+                    <div style={{ fontWeight: '600' }}>{selectedRentalForDetail.phone}</div>
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '2rem' }}>
+                <h3 style={{ fontSize: '1.1rem', color: '#6b7280', marginBottom: '1rem' }}>Item Sewa</h3>
+                <div style={{ background: '#f9fafb', borderRadius: '8px', padding: '1rem' }}>
+                  {selectedRentalForDetail.items && selectedRentalForDetail.items.length > 0 ? (
+                    <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                      {selectedRentalForDetail.items.map((item, idx) => (
+                        <li key={idx} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', borderBottom: idx !== (selectedRentalForDetail.items?.length || 0) - 1 ? '1px solid #e5e7eb' : 'none', paddingBottom: idx !== (selectedRentalForDetail.items?.length || 0) - 1 ? '0.5rem' : 0 }}>
+                          <span>{item.name}</span>
+                          <span style={{ fontWeight: '600', color: '#4b5563' }}>Rp {item.price?.toLocaleString('id-ID')}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p style={{ fontStyle: 'italic', color: '#9ca3af' }}>Tidak ada data item</p>
+                  )}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1rem', paddingTop: '1rem', borderTop: '2px solid #e5e7eb', fontWeight: '700', fontSize: '1.1rem' }}>
+                    <span>Total ({calculateDuration(selectedRentalForDetail.start_date, selectedRentalForDetail.end_date)} hari)</span>
+                    <span style={{ color: '#dc2626' }}>Rp {selectedRentalForDetail.total_price?.toLocaleString('id-ID')}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <button
+                  onClick={closeDetailModal}
+                  style={{
+                    background: '#e5e7eb',
+                    color: '#374151',
+                    border: 'none',
+                    padding: '0.75rem 1.5rem',
+                    borderRadius: '8px',
+                    fontWeight: '600',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Tutup
+                </button>
+              </div>
+            </div>
+          </div>
+        )
+      }
+    </div >
   );
 }
