@@ -35,7 +35,6 @@ interface User {
   name: string;
   email: string;
   role: string;
-  phone?: string;
   created_at?: string;
 }
 
@@ -72,8 +71,7 @@ export default function AdminDashboard() {
     name: '',
     email: '',
     password: '',
-    role: 'customer',
-    phone: ''
+    role: 'customer'
   });
 
   const [formData, setFormData] = useState({
@@ -287,16 +285,14 @@ export default function AdminDashboard() {
         name: user.name,
         email: user.email,
         password: '',
-        role: user.role,
-        phone: user.phone || ''
+        role: user.role
       });
     } else {
       setUserFormData({
         name: '',
         email: '',
         password: '',
-        role: 'customer',
-        phone: ''
+        role: 'customer'
       });
     }
     setShowUserModal(true);
@@ -1371,7 +1367,6 @@ export default function AdminDashboard() {
                   <th style={{ padding: '1rem', textAlign: 'left', fontWeight: '600' }}>ID</th>
                   <th style={{ padding: '1rem', textAlign: 'left', fontWeight: '600' }}>Nama</th>
                   <th style={{ padding: '1rem', textAlign: 'left', fontWeight: '600' }}>Email</th>
-                  <th style={{ padding: '1rem', textAlign: 'left', fontWeight: '600' }}>Telepon</th>
                   <th style={{ padding: '1rem', textAlign: 'left', fontWeight: '600' }}>Role</th>
                   <th style={{ padding: '1rem', textAlign: 'left', fontWeight: '600' }}>Aksi</th>
                 </tr>
@@ -1382,7 +1377,6 @@ export default function AdminDashboard() {
                     <td style={{ padding: '1rem', fontWeight: '600' }}>#{user.id}</td>
                     <td style={{ padding: '1rem' }}>{user.name}</td>
                     <td style={{ padding: '1rem', color: '#6b7280' }}>{user.email}</td>
-                    <td style={{ padding: '1rem' }}>{user.phone || '-'}</td>
                     <td style={{ padding: '1rem' }}>
                       <span style={{
                         background: user.role === 'admin' ? '#fef3c7' : '#dbeafe',
@@ -1485,18 +1479,6 @@ export default function AdminDashboard() {
                     value={userFormData.email}
                     onChange={handleUserInputChange}
                     required
-                    style={{ width: '100%', padding: '0.75rem', border: '2px solid #e5e7eb', borderRadius: '8px', fontSize: '1rem' }}
-                  />
-                </div>
-
-                <div style={{ marginBottom: '1rem' }}>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>Nomor Telepon</label>
-                  <input
-                    type="tel"
-                    name="phone"
-                    value={userFormData.phone}
-                    onChange={handleUserInputChange}
-                    placeholder="08..."
                     style={{ width: '100%', padding: '0.75rem', border: '2px solid #e5e7eb', borderRadius: '8px', fontSize: '1rem' }}
                   />
                 </div>
