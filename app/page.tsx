@@ -251,7 +251,7 @@ export default function Home() {
       <div className="nav">
         <div className="container">
           <div className="nav-content">
-            <span className="nav-link" onClick={() => scrollToSection('camerasssss')}>Kameraaaaaaa</span>
+            <span className="nav-link" onClick={() => scrollToSection('cameras')}>Kamera</span>
             <span className="nav-link" onClick={() => scrollToSection('lenses')}>Lensa</span>
             <span className="nav-link" onClick={() => scrollToSection('actioncams')}>Action Cam</span>
             <span className="nav-link" onClick={() => scrollToSection('lighting')}>Lighting</span>
