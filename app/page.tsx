@@ -505,7 +505,6 @@ export default function Home() {
                     value={formData.name}
                     onChange={handleInputChange}
                     disabled={!!user}
-                    style={{ opacity: user ? 0.6 : 1, cursor: user ? 'not-allowed' : 'text' }}
                     required
                   />
                 </div>
@@ -517,7 +516,6 @@ export default function Home() {
                     value={formData.email}
                     onChange={handleInputChange}
                     disabled={!!user}
-                    style={{ opacity: user ? 0.6 : 1, cursor: user ? 'not-allowed' : 'text' }}
                     required
                   />
                 </div>
