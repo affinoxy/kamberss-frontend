@@ -1379,14 +1379,14 @@ export default function AdminDashboard() {
                     <td style={{ padding: '1rem', color: '#6b7280' }}>{user.email}</td>
                     <td style={{ padding: '1rem' }}>
                       <span style={{
-                        background: user.role === 'admin' ? '#fef3c7' : '#dbeafe',
-                        color: user.role === 'admin' ? '#92400e' : '#1e40af',
+                        background: user.role.toLowerCase() === 'admin' ? '#fef3c7' : '#dbeafe',
+                        color: user.role.toLowerCase() === 'admin' ? '#92400e' : '#1e40af',
                         padding: '0.25rem 0.75rem',
                         borderRadius: '9999px',
                         fontSize: '0.875rem',
                         fontWeight: '600'
                       }}>
-                        {user.role === 'admin' ? '👑 Admin' : '👤 Customer'}
+                        {user.role.toLowerCase() === 'admin' ? '👑 Admin' : '👤 Customer'}
                       </span>
                     </td>
                     <td style={{ padding: '1rem' }}>
