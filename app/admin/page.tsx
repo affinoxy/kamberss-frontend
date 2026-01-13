@@ -718,7 +718,7 @@ export default function AdminDashboard() {
                 </h2>
               </div>
               <p style={{ color: '#6b7280', marginBottom: '1.5rem' }}>
-                Menampilkan semua rental dengan status "Disetujui" yang siap untuk diproses pengembalian
+                Menampilkan semua rental dengan status "Diserahkan" yang siap untuk diproses pengembalian
               </p>
             </div>
 
@@ -765,7 +765,7 @@ export default function AdminDashboard() {
                             fontSize: '0.875rem',
                             fontWeight: '600'
                           }}>
-                            ✅ Disetujui
+                            ✅ Diserahkan
                           </span>
                         </div>
 
