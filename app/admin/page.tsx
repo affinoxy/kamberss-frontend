@@ -375,8 +375,8 @@ export default function AdminDashboard() {
     return <div className="loading">Memuat data...</div>;
   }
 
-  // Filter rentals for Return tab (only 'disetujui')
-  const activeRentals = rentals.filter(r => r.status === 'disetujui');
+  // Filter rentals for Return tab (only 'diserahkan')
+  const activeRentals = rentals.filter(r => r.status === 'diserahkan');
 
   return (
     <div style={{ minHeight: '100vh', background: '#f5f5f5' }}>
@@ -664,14 +664,14 @@ export default function AdminDashboard() {
                             borderRadius: '6px',
                             border: '2px solid #e5e7eb',
                             background: rental.status === 'menunggu' ? '#fef3c7' :
-                              rental.status === 'disetujui' ? '#d1fae5' :
+                              rental.status === 'diserahkan' ? '#d1fae5' :
                                 rental.status === 'selesai' ? '#dbeafe' : '#fee2e2',
                             fontWeight: '600',
                             cursor: 'pointer'
                           }}
                         >
                           <option value="menunggu">⏳ Menunggu</option>
-                          <option value="disetujui">✅ Disetujui</option>
+                          <option value="diserahkan">✅ Diserahkan</option>
                           <option value="selesai">✔️ Selesai</option>
                           <option value="pending">⏳ Pending</option>
                           <option value="dibatalkan">❌ Dibatalkan</option>
@@ -735,7 +735,7 @@ export default function AdminDashboard() {
                   Tidak ada rental aktif
                 </h3>
                 <p style={{ color: '#9ca3af' }}>
-                  Semua peralatan sudah dikembalikan atau belum ada yang disetujui
+                  Semua peralatan sudah dikembalikan atau belum ada yang diserahkan
                 </p>
               </div>
             ) : (
@@ -1284,7 +1284,7 @@ export default function AdminDashboard() {
                   Rp {rentals
                     .filter(r => {
                       const d = new Date(r.created_at || r.start_date);
-                      return d.getMonth() + 1 === reportMonth && d.getFullYear() === reportYear && (r.status === 'selesai' || r.status === 'disetujui' || r.status === 'dikembalikan');
+                      return d.getMonth() + 1 === reportMonth && d.getFullYear() === reportYear && (r.status === 'selesai' || r.status === 'diserahkan' || r.status === 'dikembalikan');
                     })
                     .reduce((sum, r) => sum + Number(r.total_price || 0), 0)
                     .toLocaleString('id-ID')}
