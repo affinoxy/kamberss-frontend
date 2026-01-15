@@ -130,6 +130,17 @@ export default function Home() {
       return
     }
 
+    // Validate dates: end date must be after or equal to start date
+    if (formData.startDate && formData.endDate) {
+      const startDate = new Date(formData.startDate)
+      const endDate = new Date(formData.endDate)
+
+      if (endDate < startDate) {
+        alert('Tanggal selesai tidak boleh lebih awal dari tanggal mulai!')
+        return
+      }
+    }
+
     try {
       // Step 1: Create rental in database
       const rentalResponse = await fetch(`${API_URL}/rental`, {
